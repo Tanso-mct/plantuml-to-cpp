@@ -12,7 +12,7 @@ namespace pu2cpp
  * @param out_size : An output parameter that will hold the size of the buffer
  * @return std::unique_ptr<uint8_t[]> : Buffer containing the file contents, or nullptr if the file could not be read
  */
-std::unique_ptr<uint8_t[]> ReadFileToBuffer(std::string_view file_path, size_t& out_size);
+std::unique_ptr<uint8_t[]> ReadFileToBuffer(std::string_view file_path, uint32_t& out_size);
 
 /**
  * @brief Writes a buffer to a file
@@ -21,6 +21,6 @@ std::unique_ptr<uint8_t[]> ReadFileToBuffer(std::string_view file_path, size_t& 
  * @param size : The size of the buffer
  * @return bool : True if the file was successfully written, false otherwise
  */
-bool WriteBufferToFile(std::string_view file_path, const uint8_t* buffer, size_t size);
+bool WriteBufferToFile(std::string_view file_path, const uint8_t* buffer, uint32_t size);
 
 } // namespace pu2cpp
