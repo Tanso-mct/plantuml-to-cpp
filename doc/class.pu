@@ -1,0 +1,137 @@
+﻿@startuml
+
+abstract class File
+{
+    + virtual ~File() = default
+
+    + virtual std::string GetFileExt() const
+     * @brief : Get the file extension
+     * @return : The file extension
+    ---
+}
+
+class ClassNode
+{
+
+}
+
+class ClassTree
+{
+
+}
+ClassTree *-- ClassNode
+
+class PuFile
+{
+    + PuFile(ClassTree class_tree)
+     * @brief : Constructor for PuFile with a class tree
+     * @param class_tree : The class tree representing the structure of the PlantUML file
+    
+    + ~PuFile() override = default
+
+    + std::string GetFileExt() const override
+     * @brief : Get the file extension for PuFile
+     * @return : The file extension "pu"
+
+    + const ClassTree& GetClassTree() const
+     * @brief : Get the class tree representing the structure of the PlantUML file
+     * @return : The class tree
+    ---
+    ClassTree class_tree
+     * @brief : The class tree representing the structure of the PlantUML file
+}
+PuFile --|> File
+PuFile *-- ClassTree
+
+class ClassSpec
+{
+
+}
+
+class CppFile
+{
+    + CppFile(std::vector<ClassSpec> class_specs)
+     * @brief : Constructor for CppFile with a vector of class specifications
+     * @param classSpecs : The vector of class specifications representing the structure of the C++ file
+    
+    + ~CppFile() override = default
+
+    + std::string GetFileExt() const override
+     * @brief : Get the file extension for CppFile
+     * @return : The file extension "cpp"
+
+    + const std::vector<ClassSpec>& GetClassSpecs() const
+     * @brief : Get the vector of class specifications representing the structure of the C++ file
+     * @return : The vector of class specifications
+    ---
+    - std::vector<ClassSpec> class_specs
+     * @brief : The vector of class specifications representing the structure of the C++ file
+}
+CppFile --|> File
+
+abstract class FileReader
+{
+    + virtual ~FileReader() = default
+
+    + virtual std::unique_ptr<File> Read(std::unique_ptr<u8[]> binary_data, u32 size) const = 0
+     * @brief : Read binary data and create a File object
+     * @param binary_data : The binary data to read
+     * @param size : The size of the binary data
+     * @return : A unique pointer to the created File object
+    ---
+}
+FileReader ..> File
+
+class PuFileReader
+{
+    + PuFileReader() = default
+    + ~PuFileReader() override = default
+
+    + std::unique_ptr<File> Read(std::unique_ptr<u8[]> binary_data, u32 size) const override
+     * @brief : Read binary data and create a PuFile object
+     * @param binary_data : The binary data to read
+     * @param size : The size of the binary data
+     * @return : A unique pointer to the created PuFile object
+    ---
+}
+PuFileReader --|> FileReader
+
+abstract class FileWriter
+{
+    + virtual ~FileWriter() = default
+
+    + virtual std::vector<u8> Write(const File& file) const = 0
+     * @brief : Write a File object to binary data
+     * @param file : The File object to write
+     * @return : A vector of bytes representing the binary data
+    ---
+}
+FileWriter ..> File
+
+class CppFileWriter
+{
+    + CppFileWriter() = default
+    + ~CppFileWriter() override = default
+    ---
+}
+CppFileWriter --|> FileWriter
+
+abstract class Converter
+{
+    + virtual ~Converter() = default
+    ---
+}
+Converter *-- FileReader
+Converter *-- FileWriter
+
+class PuToCppConverter
+{
+    + PuToCppConverter() = default
+    + ~PuToCppConverter() override = default
+    ---
+}
+PuToCppConverter --|> Converter
+PuToCppConverter ..> PuFile
+PuToCppConverter ..> CppFile
+
+@enduml
