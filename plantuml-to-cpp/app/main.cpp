@@ -95,5 +95,7 @@ int main(int argc, char* argv[])
 		std::cerr << "Failed to write output file: " << output_file_path << std::endl;
 		return pu2cpp::ERROR_FILE_WRITE;
 	}
+
+	return 0;
 }
 
