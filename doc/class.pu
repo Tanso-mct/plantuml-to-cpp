@@ -10,14 +10,106 @@ abstract class File
     ---
 }
 
+class ClassMember
+{
+    + ClassMember(std::string declaration, std::vector<std::string> modifiers, std::vector<std::string> comments)
+     * @brief : Constructor for ClassMember with a declaration and modifiers
+     * @param declaration : The declaration (e.g., "void foo(int x), "int bar")
+     * @param modifiers : A vector of modifiers [e.g., "public", "static"]
+     * @param comments : A vector of comments
+
+    + ~ClassMember() = default
+
+    + std::string_view GetDeclaration() const
+     * @brief : Get the declaration
+     * @return : The declaration
+
+    + const std::vector<std::string>& GetModifiers() const
+     * @brief : Get the vector of modifiers
+     * @return : The vector of modifiers
+
+    + const std::vector<std::string>& GetComments() const
+     * @brief : Get the vector of comments
+     * @return : The vector of comments
+    ---
+    - std::string declaration_
+     * @brief : The declaration (e.g., "void foo(int x), "int bar")
+
+    - std::vector<std::string> modifiers_
+     * @brief : A vector of modifiers (e.g., ["public", "static"])
+
+    - std::vector<std::string> comments_
+     * @brief : A vector of comments
+}
+
 class ClassNode
 {
+    + ClassNode(std::string name, const ClassNode* parent = nullptr)
+     * @brief : Constructor for ClassNode with a name and an optional parent
+     * @param name : The name of the class
+     * @param parent : Pointer to the parent class node (nullptr if it's a root node)
 
+    + ~ClassNode() = default
+
+    + std::string_view GetName() const
+     * @brief : Get the name of the class
+     * @return : The name of the class
+
+    + void AddMethod(ClassMember method)
+     * @brief : Add a method to the class node
+     * @param method : The method to add
+
+    + void AddVariable(ClassMember variable)
+     * @brief : Add a variable to the class node
+     * @param variable : The variable to add
+
+    + const ClassNode* GetParent() const
+     * @brief : Get a pointer to the parent class node
+     * @return : Pointer to the parent class node (nullptr if it's a root node)
+    ---
+    - std::string name_
+     * @brief : The name of the class
+
+    - const ClassNode* parent_
+     * @brief : Pointer to the parent class node (nullptr if it's a root node)
+     * @note : Parent is the base class, and Child is the derived class
+
+    - std::vector<ClassMember> methods_
+     * @brief : A vector of methods belonging to the class
+
+    - std::vector<ClassMember> variables_
+     * @brief : A vector of variables belonging to the class
 }
+ClassNode *-- ClassMember
 
 class ClassTree
 {
+    + ClassTree() = default
+    + ~ClassTree() = default
 
+    + void AddNode(std::unique_ptr<ClassNode> node)
+     * @brief : Add a class node to the class tree
+     * @param node : The class node to add
+
+    + const ClassNode* GetNode(std::string_view name) const
+     * @brief : Get a pointer to a class node by name
+     * @param name : The name of the class node to retrieve
+     * @return : Pointer to the class node with the specified name (nullptr if not found)
+
+    + std::vector<std::string_view> GetNodeNames() const
+     * @brief : Get a vector of class node names in the class tree
+     * @return : A vector of class node names in the class tree
+
+    + const std::vector<const ClassNode*>& GetRootNodes() const
+     * @brief : Get a vector of pointers to the root class nodes in the class tree
+     * @return : A vector of pointers to the root class nodes in the class tree
+    ---
+    - std::unordered_map<std::string, std::unique_ptr<ClassNode>> nodes
+     * @brief : A map of class nodes in the class tree, keyed by class name
+
+    - std::vector<const ClassNode*> root_nodes
+     * @brief : A vector of pointers to the root class nodes in the class tree
+     * @note : Root nodes are those that do not have a parent
 }
 ClassTree *-- ClassNode
 
@@ -37,37 +129,11 @@ class PuFile
      * @brief : Get the class tree representing the structure of the PlantUML file
      * @return : The class tree
     ---
-    ClassTree class_tree
+    ClassTree class_tree_
      * @brief : The class tree representing the structure of the PlantUML file
 }
 PuFile --|> File
 PuFile *-- ClassTree
-
-class ClassSpec
-{
-
-}
-
-class CppFile
-{
-    + CppFile(std::vector<ClassSpec> class_specs)
-     * @brief : Constructor for CppFile with a vector of class specifications
-     * @param classSpecs : The vector of class specifications representing the structure of the C++ file
-    
-    + ~CppFile() override = default
-
-    + std::string GetFileExt() const override
-     * @brief : Get the file extension for CppFile
-     * @return : The file extension "cpp"
-
-    + const std::vector<ClassSpec>& GetClassSpecs() const
-     * @brief : Get the vector of class specifications representing the structure of the C++ file
-     * @return : The vector of class specifications
-    ---
-    - std::vector<ClassSpec> class_specs
-     * @brief : The vector of class specifications representing the structure of the C++ file
-}
-CppFile --|> File
 
 abstract class FileReader
 {
@@ -100,10 +166,10 @@ abstract class FileWriter
 {
     + virtual ~FileWriter() = default
 
-    + virtual std::vector<u8> Write(const File& file) const = 0
+    + virtual std::unique_ptr<u8[]> Write(std::unique_ptr<File> file) const = 0
      * @brief : Write a File object to binary data
      * @param file : The File object to write
-     * @return : A vector of bytes representing the binary data
+     * @return std::unique_ptr<u8[]> : Vector of bytes representing the binary data
     ---
 }
 FileWriter ..> File
@@ -112,26 +178,37 @@ class CppFileWriter
 {
     + CppFileWriter() = default
     + ~CppFileWriter() override = default
+
+    + std::unique_ptr<u8[]> Write(std::unique_ptr<File> file) const override
+     * @brief : Write a File object to binary data
+     * @param file : The File object to write
+     * @return std::unique_ptr<u8[]> : Vector of bytes representing the binary data
     ---
 }
 CppFileWriter --|> FileWriter
 
-abstract class Converter
+class Converter
 {
+    + Converter(std::unique_ptr<FileReader> reader, std::unique_ptr<FileWriter> writer)
+     * @brief : Constructor for Converter with a FileReader and FileWriter
+     * @param reader : The FileReader to use for reading files
+     * @param writer : The FileWriter to use for writing files
+    
     + virtual ~Converter() = default
+
+    + std::unique_ptr<u8[]> Convert(std::unique_ptr<u8[]> binary_data, u32 size) const
+     * @brief : Convert binary data from one file format to another
+     * @param binary_data : The binary data to convert
+     * @param size : The size of the binary data
+     * @return std::unique_ptr<u8[]> : Vector of bytes representing the converted binary data
     ---
+    - std::unique_ptr<FileReader> reader_
+     * @brief : The FileReader to use for reading files
+
+    - std::unique_ptr<FileWriter> writer_
+     * @brief : The FileWriter to use for writing files
 }
 Converter *-- FileReader
 Converter *-- FileWriter
-
-class PuToCppConverter
-{
-    + PuToCppConverter() = default
-    + ~PuToCppConverter() override = default
-    ---
-}
-PuToCppConverter --|> Converter
-PuToCppConverter ..> PuFile
-PuToCppConverter ..> CppFile
 
 @enduml
