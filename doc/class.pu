@@ -4,7 +4,7 @@ abstract class File
 {
     + virtual ~File() = default
 
-    + virtual std::string GetFileExt() const
+    + virtual std::string GetFileExt() const = 0
      * @brief : Get the file extension
      * @return : The file extension
     ---
@@ -139,7 +139,7 @@ abstract class FileReader
 {
     + virtual ~FileReader() = default
 
-    + virtual std::unique_ptr<File> Read(std::unique_ptr<u8[]> binary_data, u32 size) const = 0
+    + virtual std::unique_ptr<File> Read(std::unique_ptr<uint8_t[]> binary_data, uint32_t size) const = 0
      * @brief : Read binary data and create a File object
      * @param binary_data : The binary data to read
      * @param size : The size of the binary data
@@ -153,7 +153,7 @@ class PuFileReader
     + PuFileReader() = default
     + ~PuFileReader() override = default
 
-    + std::unique_ptr<File> Read(std::unique_ptr<u8[]> binary_data, u32 size) const override
+    + std::unique_ptr<File> Read(std::unique_ptr<uint8_t[]> binary_data, uint32_t size) const override
      * @brief : Read binary data and create a PuFile object
      * @param binary_data : The binary data to read
      * @param size : The size of the binary data
@@ -166,10 +166,10 @@ abstract class FileWriter
 {
     + virtual ~FileWriter() = default
 
-    + virtual std::unique_ptr<u8[]> Write(std::unique_ptr<File> file) const = 0
+    + virtual std::unique_ptr<uint8_t[]> Write(std::unique_ptr<File> file) const = 0
      * @brief : Write a File object to binary data
      * @param file : The File object to write
-     * @return std::unique_ptr<u8[]> : Vector of bytes representing the binary data
+     * @return std::unique_ptr<uint8_t[]> : Vector of bytes representing the binary data
     ---
 }
 FileWriter ..> File
@@ -179,10 +179,10 @@ class CppFileWriter
     + CppFileWriter() = default
     + ~CppFileWriter() override = default
 
-    + std::unique_ptr<u8[]> Write(std::unique_ptr<File> file) const override
+    + std::unique_ptr<uint8_t[]> Write(std::unique_ptr<File> file) const override
      * @brief : Write a File object to binary data
      * @param file : The File object to write
-     * @return std::unique_ptr<u8[]> : Vector of bytes representing the binary data
+     * @return std::unique_ptr<uint8_t[]> : Vector of bytes representing the binary data
     ---
 }
 CppFileWriter --|> FileWriter
@@ -194,13 +194,13 @@ class Converter
      * @param reader : The FileReader to use for reading files
      * @param writer : The FileWriter to use for writing files
     
-    + virtual ~Converter() = default
+    + ~Converter() = default
 
-    + std::unique_ptr<u8[]> Convert(std::unique_ptr<u8[]> binary_data, u32 size) const
+    + std::unique_ptr<uint8_t[]> Convert(std::unique_ptr<uint8_t[]> binary_data, uint32_t size) const
      * @brief : Convert binary data from one file format to another
      * @param binary_data : The binary data to convert
      * @param size : The size of the binary data
-     * @return std::unique_ptr<u8[]> : Vector of bytes representing the converted binary data
+     * @return std::unique_ptr<uint8_t[]> : Vector of bytes representing the converted binary data
     ---
     - std::unique_ptr<FileReader> reader_
      * @brief : The FileReader to use for reading files
