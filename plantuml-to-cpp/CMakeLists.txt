@@ -19,11 +19,11 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_library(plantuml-to-cpp-lib STATIC
     # ---- Headers ----
 
-    include/plantuml-to-cpp/plantuml-to-cpp.h
+    include/plantuml-to-cpp/file_io.h
 
     # ---- Sources ----
 
-    src/plantuml-to-cpp.cpp
+    src/file_io.cpp
 )
 
 # C++ 17 standard

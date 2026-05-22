@@ -9,10 +9,10 @@ namespace pu2cpp
 /**
  * @brief Reads the contents of a file into a buffer
  * @param file_path : The path to the file to be read
- * @param out_size : An output parameter that will hold the size of the buffer
+ * @param size : An output parameter that will hold the size of the buffer
  * @return std::unique_ptr<uint8_t[]> : Buffer containing the file contents, or nullptr if the file could not be read
  */
-std::unique_ptr<uint8_t[]> ReadFileToBuffer(std::string_view file_path, uint32_t& out_size);
+std::unique_ptr<uint8_t[]> ReadFileToBuffer(std::string_view file_path, fpos_t& size);
 
 /**
  * @brief Writes a buffer to a file
