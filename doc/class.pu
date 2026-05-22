@@ -59,9 +59,17 @@ class ClassNode
      * @brief : Add a method to the class node
      * @param method : The method to add
 
+    + const std::vector<ClassMember>& GetMethods() const
+     * @brief : Get the vector of methods belonging to the class
+     * @return : The vector of methods belonging to the class
+
     + void AddVariable(ClassMember variable)
      * @brief : Add a variable to the class node
      * @param variable : The variable to add
+
+    + const std::vector<ClassMember>& GetVariables() const
+     * @brief : Get the vector of variables belonging to the class
+     * @return : The vector of variables belonging to the class
 
     + const ClassNode* GetParent() const
      * @brief : Get a pointer to the parent class node

@@ -20,10 +20,12 @@ add_library(plantuml-to-cpp-lib STATIC
     # ---- Headers ----
 
     include/plantuml-to-cpp/file_io.h
+    include/plantuml-to-cpp/class_diagram.h
 
     # ---- Sources ----
 
     src/file_io.cpp
+    src/class_diagram.cpp
 )
 
 # C++ 17 standard
@@ -78,6 +80,7 @@ if (BUILD_TESTING)
 
     add_executable(plantuml-to-cpp_tests
         tests/file_io.cpp
+        tests/class_diagram.cpp
     )
 
     target_link_libraries(plantuml-to-cpp_tests

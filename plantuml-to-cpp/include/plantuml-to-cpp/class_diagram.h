@@ -75,10 +75,22 @@ public:
     void AddMethod(ClassMember method);
 
     /**
+     * @brief : Get the vector of methods belonging to the class
+     * @return : The vector of methods belonging to the class
+     */
+    const std::vector<ClassMember>& GetMethods() const;
+
+    /**
      * @brief : Add a variable to the class node
      * @param variable : The variable to add
      */
     void AddVariable(ClassMember variable);
+
+    /**
+     * @brief : Get the vector of variables belonging to the class
+     * @return : The vector of variables belonging to the class
+     */
+    const std::vector<ClassMember>& GetVariables() const;
 
     /**
      * @brief : Get a pointer to the parent class node
@@ -134,11 +146,11 @@ public:
 
 private:
     // A map of class nodes in the class tree, keyed by class name
-    std::unordered_map<std::string, std::unique_ptr<ClassNode>> nodes;
+    std::unordered_map<std::string, std::unique_ptr<ClassNode>> nodes_;
 
     // A vector of pointers to the root class nodes in the class tree
     // Root nodes are those that do not have a parent
-    std::vector<const ClassNode*> root_nodes;
+    std::vector<const ClassNode*> root_nodes_;
 };
 
 } // namespace pu2cpp
