@@ -40,6 +40,22 @@ public:
     bool Parse(const uint8_t* binary_data, uint32_t size, uint8_t*& iterator, ClassTree& class_tree) const override;
 };
 
+class ClassRelationshipParser : public PuFileParser
+{
+public:
+    ClassRelationshipParser() = default;
+    ~ClassRelationshipParser() override = default;
+    bool Parse(const uint8_t* binary_data, uint32_t size, uint8_t*& iterator, ClassTree& class_tree) const override;
+};
+
+/**
+ * @brief : Parse binary data from a PlantUML file and create a ClassTree object representing the structure of the file
+ * @param binary_data : The binary data to parse
+ * @param size : The size of the binary data
+ * @return std::unique_ptr<ClassTree> : A unique pointer to the created ClassTree object (nullptr if parsing failed)
+ */
+std::unique_ptr<ClassTree> ParsePuFile(const uint8_t* binary_data, uint32_t size);
+
 class PuFile 
     : public File
 {

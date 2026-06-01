@@ -142,15 +142,11 @@ public:
      * @brief : Get a vector of pointers to the root class nodes in the class tree
      * @return : A vector of pointers to the root class nodes in the class tree
      */
-    const std::vector<const ClassNode*>& GetRootNodes() const;
+    std::vector<const ClassNode*> GetRootNodes() const;
 
 private:
     // A map of class nodes in the class tree, keyed by class name
     std::unordered_map<std::string, std::unique_ptr<ClassNode>> nodes_;
-
-    // A vector of pointers to the root class nodes in the class tree
-    // Root nodes are those that do not have a parent
-    std::vector<const ClassNode*> root_nodes_;
 };
 
 } // namespace pu2cpp

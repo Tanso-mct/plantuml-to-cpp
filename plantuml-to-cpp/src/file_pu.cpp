@@ -7,34 +7,34 @@ namespace pu2cpp
 
 bool ClassNameParser::Parse(const uint8_t *binary_data, uint32_t size, uint8_t*& iterator, ClassTree& class_tree) const
 {
-    // Check it is a class declaration
-    const char* class_keyword = "class ";
-    for (size_t i = 0; i < strlen(class_keyword); ++i)
+    // Find the next occurrence of "class " in the binary data
+    const std::string class_keyword = "class ";
+    bool found_class_keyword = false;
+    while (iterator - binary_data < size)
     {
-        if (iterator[i] != class_keyword[i])
-            return false; // Not a class declaration
+        if (std::equal(class_keyword.begin(), class_keyword.end(), iterator))
+        {
+            // Found the "class " keyword, move the iterator past it
+            iterator += class_keyword.size();
+            found_class_keyword = true;
+            break;
+        }
+        ++iterator;
     }
 
-    // Move the iterator past the "class " keyword
-    iterator += strlen(class_keyword);
+    if (!found_class_keyword)
+        return false; // No more class keywords found, parsing is complete
 
-    // Collect the class name until we hit a space
+    // Collect the class name until we hit a space or the end of the binary data
     std::string class_name;
-    while (*iterator != ' ')
+    while (iterator - binary_data < size && *iterator != ' ' && *iterator != '\r' && *iterator != '\n')
     {
         class_name += static_cast<char>(*iterator);
         ++iterator;
-        if (iterator - binary_data >= size)
-            return false; // Reached the end of the data without finding a space
     }
 
-    // Move the iterator to the { character
-    while (*iterator != '{')
-    {
-        ++iterator;
-        if (iterator - binary_data >= size)
-            return false; // Reached the end of the data without finding '{'
-    }
+    // Add the class name to the class tree
+    class_tree.AddNode(std::make_unique<ClassNode>(class_name));
 
     return true;
 }
@@ -42,6 +42,42 @@ bool ClassNameParser::Parse(const uint8_t *binary_data, uint32_t size, uint8_t*&
 bool MemberParser::Parse(const uint8_t *binary_data, uint32_t size, uint8_t*& iterator, ClassTree& class_tree) const
 {
     return false;
+}
+
+bool ClassRelationshipParser::Parse(const uint8_t *binary_data, uint32_t size, uint8_t*& iterator, ClassTree& class_tree) const
+{
+    return false;
+}
+
+std::unique_ptr<ClassTree> ParsePuFile(const uint8_t* binary_data, uint32_t size)
+{
+    // Create parsers for class names and members
+    std::unique_ptr<pu2cpp::PuFileParser> class_name_parser = std::make_unique<pu2cpp::ClassNameParser>();
+    std::unique_ptr<pu2cpp::PuFileParser> member_parser = std::make_unique<pu2cpp::MemberParser>();
+    std::unique_ptr<pu2cpp::PuFileParser> relationship_parser = std::make_unique<pu2cpp::ClassRelationshipParser>();
+
+    // Create a ClassTree to hold the parsed class diagram
+    std::unique_ptr<ClassTree> class_tree = std::make_unique<ClassTree>();
+
+    uint8_t* iterator = const_cast<uint8_t*>(binary_data);
+    while (class_name_parser->Parse(binary_data, size, iterator, *class_tree))
+    {
+        // Successfully parsed a class name, now try to parse members
+        
+        while (member_parser->Parse(binary_data, size, iterator, *class_tree))
+        {
+            // Successfully parsed a member, continue parsing members until we can't parse anymore
+        }
+
+        // After parsing members, should parse relationships
+
+        while (relationship_parser->Parse(binary_data, size, iterator, *class_tree))
+        {
+            // Successfully parsed a relationship, continue parsing relationships until we can't parse anymore
+        }
+    }
+
+    return class_tree;
 }
 
 PuFile::PuFile(std::unique_ptr<ClassTree> class_tree)

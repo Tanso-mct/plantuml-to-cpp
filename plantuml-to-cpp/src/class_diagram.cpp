@@ -74,11 +74,6 @@ void ClassTree::AddNode(std::unique_ptr<ClassNode> node)
 
     // Add the node to the nodes map, keyed by its name
     nodes_[node_name.data()] = std::move(node);
-
-    // If the node dose not have a parent, it is a root node, so add it to the root nodes vector
-    const ClassNode* parent = nodes_[node_name.data()]->GetParent();
-    if (parent == nullptr)
-        root_nodes_.push_back(nodes_[node_name.data()].get());
 }
 
 const ClassNode* ClassTree::GetNode(std::string_view name) const
@@ -100,9 +95,19 @@ std::vector<std::string_view> ClassTree::GetNodeNames() const
     return node_names;
 }
 
-const std::vector<const ClassNode*>& ClassTree::GetRootNodes() const
+std::vector<const ClassNode*> ClassTree::GetRootNodes() const
 {
-    return root_nodes_;
+    std::vector<const ClassNode*> root_nodes;
+    for (const auto& pair : nodes_)
+    {
+        const ClassNode* node = pair.second.get();
+
+        // If the node does not have a parent, it is a root node, so add it to the root nodes vector
+        if (node->GetParent() == nullptr)
+            root_nodes.push_back(node);
+    }
+
+    return root_nodes;
 }
 
 } // namespace pu2cpp
