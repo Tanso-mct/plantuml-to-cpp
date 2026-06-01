@@ -1,10 +1,44 @@
 ﻿#pragma once
 
+#include <memory>
+
 #include "plantuml-to-cpp/file.h"
 #include "plantuml-to-cpp/class_diagram.h"
 
 namespace pu2cpp
 {
+
+class PuFileParser
+{
+public:
+    virtual ~PuFileParser() = default;
+
+    /**
+     * @brief : Parse binary data and create a ClassTree object
+     * @param binary_data : The binary data to parse
+     * @param size : The size of the binary data
+     * @param iterator : A pointer to the current position in the binary data (used for parsing)
+     * @param class_tree : Output parameter that will hold the created ClassTree object
+     * @return bool : true if parsing was successful, false otherwise
+     */
+    virtual bool Parse(const uint8_t* binary_data, uint32_t size, uint8_t*& iterator, ClassTree& class_tree) const = 0;
+};
+
+class ClassNameParser : public PuFileParser
+{
+public:
+    ClassNameParser() = default;
+    ~ClassNameParser() override = default;
+    bool Parse(const uint8_t* binary_data, uint32_t size, uint8_t*& iterator, ClassTree& class_tree) const override;
+};
+
+class MemberParser : public PuFileParser
+{
+public:
+    MemberParser() = default;
+    ~MemberParser() override = default;
+    bool Parse(const uint8_t* binary_data, uint32_t size, uint8_t*& iterator, ClassTree& class_tree) const override;
+};
 
 class PuFile 
     : public File
@@ -14,7 +48,7 @@ public:
      * @brief : Constructor for PuFile with a class tree
      * @param class_tree : The class tree representing the structure of the PlantUML file
      */
-    PuFile(ClassTree class_tree);
+    PuFile(std::unique_ptr<ClassTree> class_tree);
 
     ~PuFile() override = default;
 
@@ -32,7 +66,7 @@ public:
 
 private:
     // The class tree representing the structure of the PlantUML file
-    ClassTree class_tree_;
+    std::unique_ptr<ClassTree> class_tree_;
 };
 
 class PuFileReader :

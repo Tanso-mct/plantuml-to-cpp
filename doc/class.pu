@@ -121,6 +121,20 @@ class ClassTree
 }
 ClassTree *-- ClassNode
 
+class PuFileParser
+{
+    + PuFileParser() = default
+    + ~PuFileParser() = default
+
+    + virtual bool Parse(const uint8_t* binary_data, uint32_t size, ClassTree& class_tree) const = 0
+     * @brief : Parse binary data and create a ClassTree object
+     * @param binary_data : The binary data to parse
+     * @param size : The size of the binary data
+     * @param class_tree : Output parameter that will hold the created ClassTree object
+     * @return : true if parsing was successful, false otherwise
+    ---
+}
+
 class PuFile
 {
     + PuFile(ClassTree class_tree)
@@ -142,6 +156,7 @@ class PuFile
 }
 PuFile --|> File
 PuFile *-- ClassTree
+PuFile ..> PuFileParser
 
 abstract class FileReader
 {

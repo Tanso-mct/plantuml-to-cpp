@@ -7,3 +7,4 @@
 #include <memory>
 #include <unordered_map>
 #include <fstream>
+#include <cassert>

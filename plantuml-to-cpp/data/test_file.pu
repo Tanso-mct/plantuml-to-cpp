@@ -1,0 +1,14 @@
+﻿@startuml
+
+class TestClass
+{
+    + TestClass()
+     * @brief : Constructor for TestClass
+
+    + ~TestClass() = default
+
+    + void TestMethod()
+     * @brief : A test method in TestClass
+}
+
+@enduml
