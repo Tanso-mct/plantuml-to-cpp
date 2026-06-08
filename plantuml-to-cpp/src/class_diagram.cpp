@@ -63,6 +63,11 @@ const ClassNode* ClassNode::GetParent() const
     return parent_;
 }
 
+void ClassNode::SetParent(const ClassNode* parent)
+{
+    parent_ = parent;
+}
+
 void ClassTree::AddNode(std::unique_ptr<ClassNode> node)
 {
     // Get the name of the node to be added

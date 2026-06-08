@@ -98,6 +98,12 @@ public:
      */
     const ClassNode* GetParent() const;
 
+    /**
+     * @brief : Set the parent class node for this class node
+     * @param parent : Pointer to the parent class node to set
+     */
+    void SetParent(const ClassNode* parent);
+
 private:
     // The name of the class
     std::string name_;

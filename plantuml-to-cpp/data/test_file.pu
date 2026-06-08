@@ -18,6 +18,7 @@ class TestClass
     - int test_variable
      * @brief : A private member variable in TestClass
 }
+TestClass ..|> InterfaceClass
 
 abstract class AbstractClass
 {
@@ -46,10 +47,14 @@ class AnotherClass
 
     + void AnotherMethod()
      * @brief : A test method in AnotherClass
+
+    + void AbstractMethod() override
+     * @brief : Implementation of the pure virtual method from AbstractClass
     ---
     - TestClass test_class_instance
      * @brief : An instance of TestClass as a member variable in AnotherClass
 }
 AnotherClass *-- TestClass
+AnotherClass ..|> AbstractClass
 
 @enduml

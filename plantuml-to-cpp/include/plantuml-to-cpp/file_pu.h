@@ -34,6 +34,7 @@ const std::string STATIC_MODIFIER_STRIPPED = "static";
 const bool IS_STATIC_MODIFIER[] = {false, false, false, true, true, true};
 const std::string COMMENT_PREFIX = " * ";
 const std::string MEMBER_DIVIDE_LINE = "---";
+const std::string INHERITANCE_KEYWORD = " ..|> ";
 
 class ClassNameParser : public PuFileParser
 {
@@ -55,6 +56,8 @@ class MembersParser : public PuFileParser
 public:
     MembersParser(std::string_view class_name);
     ~MembersParser() override = default;
+
+    // iterator : A pointer to the class definition in the binary data, which should be positioned right after the class name
     bool Parse(const uint8_t* binary_data, uint32_t size, uint8_t*& iterator, ClassTree& class_tree) const override;
 
 private:
@@ -67,6 +70,9 @@ class ClassRelationshipParser : public PuFileParser
 public:
     ClassRelationshipParser() = default;
     ~ClassRelationshipParser() override = default;
+
+    // iterator : A pointer to the position in the binary data where class relationships are defined, 
+    // which should be positioned right after parsing all class definitions and their members
     bool Parse(const uint8_t* binary_data, uint32_t size, uint8_t*& iterator, ClassTree& class_tree) const override;
 };
 

@@ -7,7 +7,7 @@ namespace pu2cpp
 
 bool ClassNameParser::Parse(const uint8_t *binary_data, uint32_t size, uint8_t*& iterator, ClassTree& class_tree) const
 {
-    // Find the next occurrence of "class " or "interface " or "abstract class " in the binary data
+    // Find the next occurrence of class keyword in the binary data
     bool found_class_keyword = false;
     while (iterator - binary_data < size)
     {
@@ -235,7 +235,79 @@ bool MembersParser::Parse(const uint8_t *binary_data, uint32_t size, uint8_t*& i
 
 bool ClassRelationshipParser::Parse(const uint8_t *binary_data, uint32_t size, uint8_t*& iterator, ClassTree& class_tree) const
 {
-    return false;
+    // Find the next occurrence of class keyword in the binary data
+    bool found_class_keyword = false;
+    uint8_t* next_class_start_pos = iterator;
+    while (next_class_start_pos - binary_data < size)
+    {
+        for (const std::string& keyword : CLASS_KEYWORDS)
+        {
+            if (std::equal(keyword.begin(), keyword.end(), next_class_start_pos))
+            {
+                found_class_keyword = true;
+                break;
+            }
+        }
+
+        if (found_class_keyword)
+            break; // Found the start of the next class, exit the loop
+
+        ++next_class_start_pos; // Move to the next byte
+    }
+
+    // Find the next occurrence of inheritance keyword in the binary data
+    uint8_t* inheritance_keyword_pos = iterator;
+    while (inheritance_keyword_pos < next_class_start_pos)
+    {
+        if (std::equal(INHERITANCE_KEYWORD.begin(), INHERITANCE_KEYWORD.end(), inheritance_keyword_pos))
+        {
+            // Move backwards from the inheritance keyword to find the derived class name
+            uint8_t* temp = inheritance_keyword_pos;
+            while (temp > binary_data && *temp != '\r' && *temp != '\n')
+                --temp;
+
+            // Extract the derived class name
+            std::string derived_class_name = std::string(temp + 1, inheritance_keyword_pos);
+
+            // Move forwards from the inheritance keyword to find the base class name
+            temp = inheritance_keyword_pos + INHERITANCE_KEYWORD.size();
+            while (temp < next_class_start_pos && *temp != '\r' && *temp != '\n')
+                ++temp;
+
+            // Extract the base class name
+            std::string base_class_name = std::string(inheritance_keyword_pos + INHERITANCE_KEYWORD.size(), temp);
+
+            // Get the class nodes for the derived and base classes from the class tree
+            ClassNode* derived_class_node = class_tree.GetNode(derived_class_name);
+            if (!derived_class_node)
+            {
+                // Add the derived class node to the class tree if it does not exist
+                class_tree.AddNode(std::make_unique<ClassNode>(derived_class_name));
+                derived_class_node = class_tree.GetNode(derived_class_name);
+            }
+
+            ClassNode* base_class_node = class_tree.GetNode(base_class_name);
+            if (!base_class_node)
+            {
+                // Add the base class node to the class tree if it does not exist
+                class_tree.AddNode(std::make_unique<ClassNode>(base_class_name));
+                base_class_node = class_tree.GetNode(base_class_name);
+            }
+
+            // Set the parent of the derived class node to be the base class node
+            derived_class_node->SetParent(base_class_node);
+            
+            // Move the inheritance keyword position past the current inheritance relationship to find the next one
+            inheritance_keyword_pos = temp;
+        }
+
+        ++inheritance_keyword_pos; // Move to the next byte
+    }
+
+    // Move the iterator to the start of the next class for the next iteration
+    iterator = next_class_start_pos;
+
+    return true;
 }
 
 std::unique_ptr<ClassTree> ParsePuFile(const uint8_t* binary_data, uint32_t size)
@@ -260,7 +332,8 @@ std::unique_ptr<ClassTree> ParsePuFile(const uint8_t* binary_data, uint32_t size
         }
 
         // After parsing members, should parse relationships
-
+        std::unique_ptr<pu2cpp::ClassRelationshipParser> relationship_parser = std::make_unique<pu2cpp::ClassRelationshipParser>();
+        relationship_parser->Parse(binary_data, size, iterator, *class_tree);
     }
 
     return class_tree;
