@@ -9,6 +9,24 @@ class TestClass
 
     + void TestMethod()
      * @brief : A test method in TestClass
+    ---
+    - int test_variable
+     * @brief : A private member variable in TestClass
 }
+
+class AnotherClass
+{
+    + AnotherClass()
+     * @brief : Constructor for AnotherClass
+
+    + ~AnotherClass() = default
+
+    + void AnotherMethod()
+     * @brief : A test method in AnotherClass
+    ---
+    - TestClass test_class_instance
+     * @brief : An instance of TestClass as a member variable in AnotherClass
+}
+AnotherClass *-- TestClass
 
 @enduml

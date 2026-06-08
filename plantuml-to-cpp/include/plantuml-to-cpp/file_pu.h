@@ -24,20 +24,42 @@ public:
     virtual bool Parse(const uint8_t* binary_data, uint32_t size, uint8_t*& iterator, ClassTree& class_tree) const = 0;
 };
 
+// Define specific parsers for class names, members, and relationships
+const std::string CLASS_KEYWORDS[] = {"class ", "interface ", "abstract class "};
+const std::string MEMBER_DECLARATION_START = "{";
+const std::string MEMBER_DECLARATION_END = "}";
+const std::string MEMBER_MODIFIERS[] = {"+ ", "- ", "# ", "{static} + ", "{static} - ", "{static} # "};
+const std::string MEMBER_MODIFIERS_STRIPPED[] = {"public ", "private ", "protected ", "public", "private ", "protected "};
+const std::string STATIC_MODIFIER_STRIPPED = "static";
+const bool IS_STATIC_MODIFIER[] = {false, false, false, true, true, true};
+const std::string COMMENT_PREFIX = " * ";
+const std::string MEMBER_DIVIDE_LINE = "---";
+
 class ClassNameParser : public PuFileParser
 {
 public:
     ClassNameParser() = default;
     ~ClassNameParser() override = default;
     bool Parse(const uint8_t* binary_data, uint32_t size, uint8_t*& iterator, ClassTree& class_tree) const override;
+
+    // Get the name of the last parsed class
+    std::string_view GetLastParsedClassName() const;
+
+private:
+    // The name of the last parsed class
+    mutable std::string last_parsed_class_name_;
 };
 
-class MemberParser : public PuFileParser
+class MembersParser : public PuFileParser
 {
 public:
-    MemberParser() = default;
-    ~MemberParser() override = default;
+    MembersParser(std::string_view class_name);
+    ~MembersParser() override = default;
     bool Parse(const uint8_t* binary_data, uint32_t size, uint8_t*& iterator, ClassTree& class_tree) const override;
+
+private:
+    // The name of the class whose members we are parsing
+    std::string_view class_name_;
 };
 
 class ClassRelationshipParser : public PuFileParser

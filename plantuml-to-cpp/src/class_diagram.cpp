@@ -76,6 +76,14 @@ void ClassTree::AddNode(std::unique_ptr<ClassNode> node)
     nodes_[node_name.data()] = std::move(node);
 }
 
+ClassNode* ClassTree::GetNode(std::string_view name)
+{
+    auto it = nodes_.find(name.data());
+    if (it != nodes_.end())
+        return it->second.get(); // Node found, return pointer to the node
+    return nullptr; // Node not found, return nullptr
+}
+
 const ClassNode* ClassTree::GetNode(std::string_view name) const
 {
     auto it = nodes_.find(name.data());

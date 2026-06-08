@@ -7,19 +7,26 @@ namespace pu2cpp
 
 bool ClassNameParser::Parse(const uint8_t *binary_data, uint32_t size, uint8_t*& iterator, ClassTree& class_tree) const
 {
-    // Find the next occurrence of "class " in the binary data
-    const std::string class_keyword = "class ";
+    // Find the next occurrence of "class " or "interface " or "abstract class " in the binary data
     bool found_class_keyword = false;
     while (iterator - binary_data < size)
     {
-        if (std::equal(class_keyword.begin(), class_keyword.end(), iterator))
+        bool keyword_found = false;
+        for (const std::string& keyword : CLASS_KEYWORDS)
         {
-            // Found the "class " keyword, move the iterator past it
-            iterator += class_keyword.size();
-            found_class_keyword = true;
-            break;
+            if (std::equal(keyword.begin(), keyword.end(), iterator))
+            {
+                found_class_keyword = true;
+                keyword_found = true;
+                iterator += keyword.size(); // Move the iterator past the keyword
+                break;
+            }
         }
-        ++iterator;
+
+        if (keyword_found)
+            break; // Found a class keyword, exit the loop
+
+        ++iterator; // Move to the next byte
     }
 
     if (!found_class_keyword)
@@ -36,12 +43,180 @@ bool ClassNameParser::Parse(const uint8_t *binary_data, uint32_t size, uint8_t*&
     // Add the class name to the class tree
     class_tree.AddNode(std::make_unique<ClassNode>(class_name));
 
+    // Store the last parsed class name in the parser
+    last_parsed_class_name_ = class_name;
+
     return true;
 }
 
-bool MemberParser::Parse(const uint8_t *binary_data, uint32_t size, uint8_t*& iterator, ClassTree& class_tree) const
+std::string_view ClassNameParser::GetLastParsedClassName() const
 {
-    return false;
+    return last_parsed_class_name_;
+}
+
+MembersParser::MembersParser(std::string_view class_name)
+    : class_name_(std::move(class_name))
+{
+}
+
+bool MembersParser::Parse(const uint8_t *binary_data, uint32_t size, uint8_t*& iterator, ClassTree& class_tree) const
+{
+    uint8_t* current = iterator;
+
+    // Find the next occurrence of member declaration start in the binary data
+    bool found_members_declaration_start = false;
+    uint8_t* members_declaration_start = nullptr;
+    while (current - binary_data < size)
+    {
+        if (std::equal(MEMBER_DECLARATION_START.begin(), MEMBER_DECLARATION_START.end(), current))
+        {
+            found_members_declaration_start = true;
+            current += MEMBER_DECLARATION_START.size(); // Move the current past the member declaration start
+            members_declaration_start = current; // Mark the start of the member declaration
+            break;
+        }
+
+        ++current; // Move to the next byte
+    }
+
+    if (!found_members_declaration_start)
+        return false; // No more member declarations found, parsing is complete
+
+    // Find the next occurrence of member declaration end in the binary data
+    bool found_members_declaration_end = false;
+    uint8_t* members_declaration_end = nullptr;
+    while (current - binary_data < size)
+    {
+        if (std::equal(MEMBER_DECLARATION_END.begin(), MEMBER_DECLARATION_END.end(), current))
+        {
+            found_members_declaration_end = true;
+            current += MEMBER_DECLARATION_END.size(); // Move the current past the member declaration end
+            members_declaration_end = current; // Mark the end of the member declaration
+            break;
+        }
+
+        ++current; // Move to the next byte
+    }
+
+    if (!found_members_declaration_end)
+        return false; // No member declaration end found, parsing is incomplete
+
+    // Find the next occurrence of member divide line in the binary data
+    bool found_member_divide_line = false;
+    uint8_t* member_divide_line = members_declaration_start;
+    while (member_divide_line < members_declaration_end)
+    {
+        if (std::equal(MEMBER_DIVIDE_LINE.begin(), MEMBER_DIVIDE_LINE.end(), member_divide_line))
+        {
+            found_member_divide_line = true;
+            break;
+        }
+
+        ++member_divide_line; // Move to the next byte
+    }
+
+    if (!found_member_divide_line)
+        return false; // No member divide line found, parsing is incomplete
+
+    // Find the next occurrence of a member modifier in the binary data
+    bool found_member_modifier = false;
+    current = members_declaration_start;
+    std::vector<std::string> member_modifiers; // To store all found member modifiers
+    while (current < members_declaration_end)
+    {
+        for (int i = 0; i < sizeof(MEMBER_MODIFIERS) / sizeof(MEMBER_MODIFIERS[0]); ++i)
+        {
+            if (std::equal(MEMBER_MODIFIERS[i].begin(), MEMBER_MODIFIERS[i].end(), current))
+            {
+                found_member_modifier = true;
+
+                // Store the stripped member modifier
+                member_modifiers.push_back(MEMBER_MODIFIERS_STRIPPED[i]);
+
+                // If the member modifier is static, also add the static modifier to the list of modifiers
+                if (IS_STATIC_MODIFIER[i])
+                    member_modifiers.push_back(STATIC_MODIFIER_STRIPPED);
+
+                current += MEMBER_MODIFIERS[i].size(); // Move the current pointer past the member modifier
+                break;
+            }
+        }
+
+        if (found_member_modifier)
+            break; // Found a member modifier, exit the loop
+
+        ++current; // Move to the next byte
+    }
+
+    if (!found_member_modifier)
+        return false; // No member modifier found, parsing is incomplete
+
+    bool is_method = false;
+    if (current < member_divide_line)
+        is_method = true; // If the current pointer is still before the member divide line, it is a method declaration
+
+    // Extract the member declaration between the member modifier and end of line
+    std::string member_declaration;
+    while (*current != '\r' && *current != '\n')
+    {
+        member_declaration += static_cast<char>(*current);
+        ++current;
+    }
+
+    // Move the current pointer past the end of line characters
+    while (*current == '\r' || *current == '\n')
+        ++current;
+
+    // Extract the comments for the member declaration from the lines following the member declaration
+    std::vector<std::string> comments;
+    while (current < members_declaration_end)
+    {
+        bool found_comment_prefix = false;
+        if (std::equal(COMMENT_PREFIX.begin(), COMMENT_PREFIX.end(), current))
+        {
+            found_comment_prefix = true;
+            current += COMMENT_PREFIX.size(); // Move the current pointer past the comment prefix
+
+            // Extract the comment text until the end of the line
+            std::string comment;
+            while (*current != '\r' && *current != '\n')
+            {
+                comment += static_cast<char>(*current);
+                ++current;
+            }
+
+            // Add the extracted comment to the list of comments for the member declaration
+            comments.push_back(std::move(comment));
+        }
+
+        if (!found_comment_prefix && (*current == '\r' || *current == '\n'))
+        {
+            // If we encounter a line that does not start with the comment prefix, 
+            // it means we have reached the end of the comments for the member declaration
+            break;
+        }
+
+        ++current; // Move to the next byte
+    }
+
+    // Move the iterator to the current position for the next parse
+    iterator = current;
+
+    // Create the ClassMember object with the extracted member declaration, modifiers, and comments
+    ClassMember member(std::move(member_declaration), std::move(member_modifiers), std::move(comments));
+    
+    // Get the class node from the class tree using the class name
+    ClassNode* class_node = class_tree.GetNode(class_name_);
+    if (!class_node)
+        return false; // Class node not found, parsing is incomplete
+
+    // Add the member to the class node
+    if (is_method)
+        class_node->AddMethod(std::move(member));
+    else
+        class_node->AddVariable(std::move(member));
+
+    return true;
 }
 
 bool ClassRelationshipParser::Parse(const uint8_t *binary_data, uint32_t size, uint8_t*& iterator, ClassTree& class_tree) const
@@ -52,9 +227,7 @@ bool ClassRelationshipParser::Parse(const uint8_t *binary_data, uint32_t size, u
 std::unique_ptr<ClassTree> ParsePuFile(const uint8_t* binary_data, uint32_t size)
 {
     // Create parsers for class names and members
-    std::unique_ptr<pu2cpp::PuFileParser> class_name_parser = std::make_unique<pu2cpp::ClassNameParser>();
-    std::unique_ptr<pu2cpp::PuFileParser> member_parser = std::make_unique<pu2cpp::MemberParser>();
-    std::unique_ptr<pu2cpp::PuFileParser> relationship_parser = std::make_unique<pu2cpp::ClassRelationshipParser>();
+    std::unique_ptr<pu2cpp::ClassNameParser> class_name_parser = std::make_unique<pu2cpp::ClassNameParser>();
 
     // Create a ClassTree to hold the parsed class diagram
     std::unique_ptr<ClassTree> class_tree = std::make_unique<ClassTree>();
@@ -62,19 +235,18 @@ std::unique_ptr<ClassTree> ParsePuFile(const uint8_t* binary_data, uint32_t size
     uint8_t* iterator = const_cast<uint8_t*>(binary_data);
     while (class_name_parser->Parse(binary_data, size, iterator, *class_tree))
     {
-        // Successfully parsed a class name, now try to parse members
+        // Successfully parsed a class name, create a members parser for the parsed class name
+        std::unique_ptr<pu2cpp::MembersParser> member_parser 
+            = std::make_unique<pu2cpp::MembersParser>(class_name_parser->GetLastParsedClassName());
         
-        while (member_parser->Parse(binary_data, size, iterator, *class_tree))
+        if (!member_parser->Parse(binary_data, size, iterator, *class_tree))
         {
-            // Successfully parsed a member, continue parsing members until we can't parse anymore
+            // Failed to parse members for the class, return nullptr to indicate parsing failure
+            return nullptr;
         }
 
         // After parsing members, should parse relationships
 
-        while (relationship_parser->Parse(binary_data, size, iterator, *class_tree))
-        {
-            // Successfully parsed a relationship, continue parsing relationships until we can't parse anymore
-        }
     }
 
     return class_tree;

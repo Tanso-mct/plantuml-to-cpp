@@ -130,6 +130,13 @@ public:
      * @param name : The name of the class node to retrieve
      * @return : Pointer to the class node with the specified name (nullptr if not found)
      */
+    ClassNode* GetNode(std::string_view name);
+
+    /**
+     * @brief : Get a pointer to a class node by name
+     * @param name : The name of the class node to retrieve
+     * @return : Pointer to the class node with the specified name (nullptr if not found)
+     */
     const ClassNode* GetNode(std::string_view name) const;
 
     /**
