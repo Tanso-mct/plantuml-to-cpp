@@ -118,103 +118,117 @@ bool MembersParser::Parse(const uint8_t *binary_data, uint32_t size, uint8_t*& i
     if (!found_member_divide_line)
         return false; // No member divide line found, parsing is incomplete
 
-    // Find the next occurrence of a member modifier in the binary data
-    bool found_member_modifier = false;
+    // Move the current pointer back to the start of the member declaration to begin parsing member declarations
     current = members_declaration_start;
-    std::vector<std::string> member_modifiers; // To store all found member modifiers
+
     while (current < members_declaration_end)
     {
-        for (int i = 0; i < sizeof(MEMBER_MODIFIERS) / sizeof(MEMBER_MODIFIERS[0]); ++i)
+        // Find the next occurrence of a member modifier in the binary data
+        bool found_member_modifier = false;
+        std::vector<std::string> member_modifiers; // To store all found member modifiers
+        while (current < members_declaration_end)
         {
-            if (std::equal(MEMBER_MODIFIERS[i].begin(), MEMBER_MODIFIERS[i].end(), current))
+            for (int i = 0; i < sizeof(MEMBER_MODIFIERS) / sizeof(MEMBER_MODIFIERS[0]); ++i)
             {
-                found_member_modifier = true;
+                if (std::equal(MEMBER_MODIFIERS[i].begin(), MEMBER_MODIFIERS[i].end(), current))
+                {
+                    found_member_modifier = true;
 
-                // Store the stripped member modifier
-                member_modifiers.push_back(MEMBER_MODIFIERS_STRIPPED[i]);
+                    // Store the stripped member modifier
+                    member_modifiers.push_back(MEMBER_MODIFIERS_STRIPPED[i]);
 
-                // If the member modifier is static, also add the static modifier to the list of modifiers
-                if (IS_STATIC_MODIFIER[i])
-                    member_modifiers.push_back(STATIC_MODIFIER_STRIPPED);
+                    // If the member modifier is static, also add the static modifier to the list of modifiers
+                    if (IS_STATIC_MODIFIER[i])
+                        member_modifiers.push_back(STATIC_MODIFIER_STRIPPED);
 
-                current += MEMBER_MODIFIERS[i].size(); // Move the current pointer past the member modifier
+                    current += MEMBER_MODIFIERS[i].size(); // Move the current pointer past the member modifier
+                    break;
+                }
+            }
+
+            if (found_member_modifier)
+                break; // Found a member modifier, exit the loop
+
+            ++current; // Move to the next byte
+        }
+
+        if (current >= members_declaration_end)
+            break; // Reached the end of member declarations, exit the loop
+
+        if (!found_member_modifier)
+            return false; // No member modifier found, parsing is incomplete
+
+        bool is_method = false;
+        if (current < member_divide_line)
+            is_method = true; // If the current pointer is still before the member divide line, it is a method declaration
+
+        // Extract the member declaration between the member modifier and end of line
+        std::string member_declaration;
+        while (*current != '\r' && *current != '\n')
+        {
+            member_declaration += static_cast<char>(*current);
+            ++current;
+        }
+
+        // Move the current pointer past the end of line characters
+        while (*current == '\r' || *current == '\n')
+            ++current;
+
+        // Check it has comments
+        uint8_t* temp = current;
+        std::vector<std::string> comments;
+        while (temp < members_declaration_end)
+        {
+            if (std::equal(COMMENT_PREFIX.begin(), COMMENT_PREFIX.end(), temp))
+            {
+                // Extract the comment text until the end of the line
+                std::string comment;
+                while (*temp != '\r' && *temp != '\n')
+                {
+                    comment += static_cast<char>(*temp);
+                    ++temp;
+                }
+
+                // Add the extracted comment to the list of comments for the member declaration
+                comments.push_back(std::move(comment));
+
+                // Move to the next line after the comment
+                while (*temp == '\r' || *temp == '\n')
+                    ++temp;
+
+                // Move the current pointer to the next line after the comment for the next iteration
+                current = temp;
+
+                continue;
+            }
+
+            if (*temp == '\r' || *temp == '\n')
+            {
+                // If we encounter a line that does not start with the comment prefix, 
+                // it means we have reached the end of the comments for the member declaration
                 break;
             }
+
+            ++temp; // Move to the next byte
         }
 
-        if (found_member_modifier)
-            break; // Found a member modifier, exit the loop
+        // Create the ClassMember object with the extracted member declaration, modifiers, and comments
+        ClassMember member(std::move(member_declaration), std::move(member_modifiers), std::move(comments));
+        
+        // Get the class node from the class tree using the class name
+        ClassNode* class_node = class_tree.GetNode(class_name_);
+        if (!class_node)
+            return false; // Class node not found, parsing is incomplete
 
-        ++current; // Move to the next byte
+        // Add the member to the class node
+        if (is_method)
+            class_node->AddMethod(std::move(member));
+        else
+            class_node->AddVariable(std::move(member));
     }
 
-    if (!found_member_modifier)
-        return false; // No member modifier found, parsing is incomplete
-
-    bool is_method = false;
-    if (current < member_divide_line)
-        is_method = true; // If the current pointer is still before the member divide line, it is a method declaration
-
-    // Extract the member declaration between the member modifier and end of line
-    std::string member_declaration;
-    while (*current != '\r' && *current != '\n')
-    {
-        member_declaration += static_cast<char>(*current);
-        ++current;
-    }
-
-    // Move the current pointer past the end of line characters
-    while (*current == '\r' || *current == '\n')
-        ++current;
-
-    // Extract the comments for the member declaration from the lines following the member declaration
-    std::vector<std::string> comments;
-    while (current < members_declaration_end)
-    {
-        bool found_comment_prefix = false;
-        if (std::equal(COMMENT_PREFIX.begin(), COMMENT_PREFIX.end(), current))
-        {
-            found_comment_prefix = true;
-            current += COMMENT_PREFIX.size(); // Move the current pointer past the comment prefix
-
-            // Extract the comment text until the end of the line
-            std::string comment;
-            while (*current != '\r' && *current != '\n')
-            {
-                comment += static_cast<char>(*current);
-                ++current;
-            }
-
-            // Add the extracted comment to the list of comments for the member declaration
-            comments.push_back(std::move(comment));
-        }
-
-        if (!found_comment_prefix && (*current == '\r' || *current == '\n'))
-        {
-            // If we encounter a line that does not start with the comment prefix, 
-            // it means we have reached the end of the comments for the member declaration
-            break;
-        }
-
-        ++current; // Move to the next byte
-    }
-
-    // Move the iterator to the current position for the next parse
-    iterator = current;
-
-    // Create the ClassMember object with the extracted member declaration, modifiers, and comments
-    ClassMember member(std::move(member_declaration), std::move(member_modifiers), std::move(comments));
-    
-    // Get the class node from the class tree using the class name
-    ClassNode* class_node = class_tree.GetNode(class_name_);
-    if (!class_node)
-        return false; // Class node not found, parsing is incomplete
-
-    // Add the member to the class node
-    if (is_method)
-        class_node->AddMethod(std::move(member));
-    else
-        class_node->AddVariable(std::move(member));
+    // Move the iterator to the end of the member declarations for the current class
+    iterator = members_declaration_end;
 
     return true;
 }

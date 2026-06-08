@@ -7,11 +7,34 @@ class TestClass
 
     + ~TestClass() = default
 
+    {static} + void StaticMethod()
+     * @brief : A static method in TestClass
+     * @details : This method is used to demonstrate the parsing of static member functions in the PlantUML file.
+
     + void TestMethod()
      * @brief : A test method in TestClass
+     * @details : This method is used to demonstrate the parsing of member functions in the PlantUML file.
     ---
     - int test_variable
      * @brief : A private member variable in TestClass
+}
+
+abstract class AbstractClass
+{
+    + virtual ~AbstractClass() = default
+
+    + virtual void AbstractMethod() = 0
+     * @brief : A pure virtual method in AbstractClass, making it an abstract class
+    ---
+}
+
+interface InterfaceClass
+{
+    + virtual ~InterfaceClass() = default
+
+    + virtual void InterfaceMethod() = 0
+     * @brief : A pure virtual method in InterfaceClass, making it an interface class
+    ---
 }
 
 class AnotherClass

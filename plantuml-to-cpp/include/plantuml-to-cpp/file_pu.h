@@ -27,7 +27,7 @@ public:
 // Define specific parsers for class names, members, and relationships
 const std::string CLASS_KEYWORDS[] = {"class ", "interface ", "abstract class "};
 const std::string MEMBER_DECLARATION_START = "{";
-const std::string MEMBER_DECLARATION_END = "}";
+const std::string MEMBER_DECLARATION_END = "}\r\n";
 const std::string MEMBER_MODIFIERS[] = {"+ ", "- ", "# ", "{static} + ", "{static} - ", "{static} # "};
 const std::string MEMBER_MODIFIERS_STRIPPED[] = {"public ", "private ", "protected ", "public", "private ", "protected "};
 const std::string STATIC_MODIFIER_STRIPPED = "static";
