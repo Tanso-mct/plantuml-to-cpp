@@ -33,13 +33,13 @@ class ClassMember
      * @return : The vector of comments
     ---
     - std::string declaration_
-     * @brief : The declaration (e.g., "void foo(int x), "int bar")
+     * The declaration (e.g., "void foo(int x), "int bar")
 
     - std::vector<std::string> modifiers_
-     * @brief : A vector of modifiers (e.g., ["public", "static"])
+     * A vector of modifiers (e.g., ["public", "static"])
 
     - std::vector<std::string> comments_
-     * @brief : A vector of comments
+     * A vector of comments
 }
 
 class ClassNode
@@ -76,17 +76,17 @@ class ClassNode
      * @return : Pointer to the parent class node (nullptr if it's a root node)
     ---
     - std::string name_
-     * @brief : The name of the class
+     * The name of the class
 
     - const ClassNode* parent_
-     * @brief : Pointer to the parent class node (nullptr if it's a root node)
-     * @note : Parent is the base class, and Child is the derived class
+     * Pointer to the parent class node (nullptr if it's a root node)
+     * Parent is the base class, and Child is the derived class
 
     - std::vector<ClassMember> methods_
-     * @brief : A vector of methods belonging to the class
+     * A vector of methods belonging to the class
 
     - std::vector<ClassMember> variables_
-     * @brief : A vector of variables belonging to the class
+     * A vector of variables belonging to the class
 }
 ClassNode *-- ClassMember
 
@@ -113,11 +113,11 @@ class ClassTree
      * @return : A vector of pointers to the root class nodes in the class tree
     ---
     - std::unordered_map<std::string, std::unique_ptr<ClassNode>> nodes
-     * @brief : A map of class nodes in the class tree, keyed by class name
+     * A map of class nodes in the class tree, keyed by class name
 
     - std::vector<const ClassNode*> root_nodes
-     * @brief : A vector of pointers to the root class nodes in the class tree
-     * @note : Root nodes are those that do not have a parent
+     * A vector of pointers to the root class nodes in the class tree
+     * Root nodes are those that do not have a parent
 }
 ClassTree *-- ClassNode
 
@@ -152,7 +152,7 @@ class PuFile
      * @return : The class tree
     ---
     ClassTree class_tree_
-     * @brief : The class tree representing the structure of the PlantUML file
+     * The class tree representing the structure of the PlantUML file
 }
 PuFile --|> File
 PuFile *-- ClassTree
@@ -228,10 +228,10 @@ class Converter
      * @return std::unique_ptr<uint8_t[]> : Vector of bytes representing the converted binary data
     ---
     - std::unique_ptr<FileReader> reader_
-     * @brief : The FileReader to use for reading files
+     * The FileReader to use for reading files
 
     - std::unique_ptr<FileWriter> writer_
-     * @brief : The FileWriter to use for writing files
+     * The FileWriter to use for writing files
 }
 Converter *-- FileReader
 Converter *-- FileWriter
