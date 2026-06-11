@@ -358,20 +358,19 @@ const ClassTree& PuFile::GetClassTree() const
     return *class_tree_;
 }
 
-
-
 std::unique_ptr<File> PuFileReader::Read(std::unique_ptr<uint8_t[]> binary_data, uint32_t size) const
 {
-    // Create a ClassTree object
-    ClassTree class_tree;
-
-    // Parse the binary data
-    for (uint32_t i = 0; i < size; ++i)
+    // Parse the binary data to create a ClassTree object
+    std::unique_ptr<pu2cpp::ClassTree> class_tree = pu2cpp::ParsePuFile(binary_data.get(), size);
+    if (!class_tree)
     {
-        
+        std::cerr << "Failed to parse PlantUML file" << std::endl;
+        return nullptr; // Parsing failed, return nullptr
     }
 
-    return nullptr;
+    // Create a PuFile object with the parsed ClassTree and return it
+    return std::make_unique<PuFile>(std::move(class_tree));
+    
 }
 
 } // namespace pu2cpp

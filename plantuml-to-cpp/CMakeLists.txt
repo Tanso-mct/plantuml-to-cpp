@@ -89,6 +89,7 @@ if (BUILD_TESTING)
         tests/class_diagram.cpp
         tests/read.cpp
         tests/write.cpp
+        tests/convert.cpp
     )
 
     target_link_libraries(plantuml-to-cpp_tests
