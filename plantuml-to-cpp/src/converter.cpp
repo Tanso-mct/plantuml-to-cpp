@@ -21,15 +21,12 @@ std::unique_ptr<uint8_t[]> Converter::Convert(
     }
 
     // Use the writer to write the File object to output binary data
-    std::unique_ptr<uint8_t[]> output_binary_data = writer_->Write(std::move(file));
+    std::unique_ptr<uint8_t[]> output_binary_data = writer_->Write(std::move(file), output_size);
     if (!output_binary_data)
     {
         std::cerr << "Failed to write output binary data" << std::endl;
         return nullptr;
     }
-
-    // Set the output size (this is just an example, you would need to determine the actual size)
-    output_size = input_size; // This is a placeholder, you should set this to the actual size of the output binary data
 
     return output_binary_data;
 }

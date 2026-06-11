@@ -23,6 +23,7 @@ add_library(plantuml-to-cpp-lib STATIC
     include/plantuml-to-cpp/class_diagram.h
     include/plantuml-to-cpp/converter.h
     include/plantuml-to-cpp/file_pu.h
+    include/plantuml-to-cpp/file_cpp.h
 
     # ---- Sources ----
 
@@ -30,6 +31,7 @@ add_library(plantuml-to-cpp-lib STATIC
     src/class_diagram.cpp
     src/converter.cpp
     src/file_pu.cpp
+    src/file_cpp.cpp
 )
 
 # C++ 17 standard
@@ -86,6 +88,7 @@ if (BUILD_TESTING)
         tests/file_io.cpp
         tests/class_diagram.cpp
         tests/read.cpp
+        tests/write.cpp
     )
 
     target_link_libraries(plantuml-to-cpp_tests

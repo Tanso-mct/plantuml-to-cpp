@@ -16,7 +16,7 @@ class TestClass
      * @details : This method is used to demonstrate the parsing of member functions in the PlantUML file.
     ---
     - int test_variable
-     * @brief : A private member variable in TestClass
+     * A private member variable in TestClass
 }
 TestClass ..|> InterfaceClass
 
@@ -52,7 +52,7 @@ class AnotherClass
      * @brief : Implementation of the pure virtual method from AbstractClass
     ---
     - TestClass test_class_instance
-     * @brief : An instance of TestClass as a member variable in AnotherClass
+     * An instance of TestClass as a member variable in AnotherClass
 }
 AnotherClass *-- TestClass
 AnotherClass ..|> AbstractClass

@@ -181,6 +181,9 @@ bool MembersParser::Parse(const uint8_t *binary_data, uint32_t size, uint8_t*& i
         {
             if (std::equal(COMMENT_PREFIX.begin(), COMMENT_PREFIX.end(), temp))
             {
+                // Move the temp pointer past the comment prefix
+                temp += COMMENT_PREFIX.size();
+
                 // Extract the comment text until the end of the line
                 std::string comment;
                 while (*temp != '\r' && *temp != '\n')

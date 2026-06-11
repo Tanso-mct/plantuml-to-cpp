@@ -160,6 +160,9 @@ public:
 private:
     // A map of class nodes in the class tree, keyed by class name
     std::unordered_map<std::string, std::unique_ptr<ClassNode>> nodes_;
+
+    // A vector for maintaining the order of nodes
+    std::vector<std::string_view> node_order_;
 };
 
 } // namespace pu2cpp

@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
 	}
 
 	// Read the input file into a buffer
-	uint32_t input_file_size = 0;
+	fpos_t input_file_size = 0;
 	std::unique_ptr<uint8_t[]> input_file_buffer = pu2cpp::ReadFileToBuffer(input_file_path, input_file_size);
 	if (!input_file_buffer)
 	{

@@ -79,6 +79,9 @@ void ClassTree::AddNode(std::unique_ptr<ClassNode> node)
 
     // Add the node to the nodes map, keyed by its name
     nodes_[node_name.data()] = std::move(node);
+
+    // Add the node name to the node order vector
+    node_order_.push_back(node_name);
 }
 
 ClassNode* ClassTree::GetNode(std::string_view name)
@@ -99,13 +102,7 @@ const ClassNode* ClassTree::GetNode(std::string_view name) const
 
 std::vector<std::string_view> ClassTree::GetNodeNames() const
 {
-    // Collect the names of all class nodes in the class tree into a vector
-    std::vector<std::string_view> node_names;
-    for (const auto& pair : nodes_)
-        node_names.push_back(pair.first);
-
-    // Return the vector of class node names
-    return node_names;
+    return node_order_;
 }
 
 std::vector<const ClassNode*> ClassTree::GetRootNodes() const

@@ -3,6 +3,8 @@
 #include <string>
 #include <memory>
 
+#include "plantuml-to-cpp/class_diagram.h"
+
 namespace pu2cpp
 {
 
@@ -16,6 +18,12 @@ public:
      * @return : The file extension
      */
     virtual std::string GetFileExt() const = 0;
+
+    /**
+     * @brief : Get the class tree representing the structure of the file
+     * @return : The class tree
+     */
+    virtual const ClassTree& GetClassTree() const = 0;
 };
 
 class FileReader
@@ -40,9 +48,10 @@ public:
     /**
      * @brief : Write a File object to binary data
      * @param file : The File object to write
+     * @param size : Output parameter that will hold the size of the binary data
      * @return std::unique_ptr<uint8_t[]> : Vector of bytes representing the binary data
      */
-    virtual std::unique_ptr<uint8_t[]> Write(std::unique_ptr<File> file) const = 0;
+    virtual std::unique_ptr<uint8_t[]> Write(std::unique_ptr<File> file, uint32_t& size) const = 0;
 };
 
 } // namespace pu2cpp

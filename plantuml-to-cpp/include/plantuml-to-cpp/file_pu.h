@@ -106,7 +106,7 @@ public:
      * @brief : Get the class tree representing the structure of the PlantUML file
      * @return : The class tree
      */
-    const ClassTree& GetClassTree() const;
+    const ClassTree& GetClassTree() const override;
 
 private:
     // The class tree representing the structure of the PlantUML file
