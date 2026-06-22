@@ -34,7 +34,7 @@ const std::string STATIC_MODIFIER_STRIPPED = "static";
 const bool IS_STATIC_MODIFIER[] = {false, false, false, true, true, true};
 const std::string COMMENT_PREFIX = " * ";
 const std::string MEMBER_DIVIDE_LINE = "---";
-const std::string INHERITANCE_KEYWORD = " ..|> ";
+const std::string INHERITANCE_KEYWORD = " --|> ";
 
 class ClassNameParser : public PuFileParser
 {

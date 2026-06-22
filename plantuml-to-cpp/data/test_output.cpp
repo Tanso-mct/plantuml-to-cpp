@@ -1,85 +1,40 @@
-class InterfaceClass
-{
-public:
-    virtual ~InterfaceClass() = default;
-
-    /**
-     * @brief : A pure virtual method in InterfaceClass, making it an interface class
-     */
-    virtual void InterfaceMethod() = 0;
-
-};
-
 class TestClass
-    : public InterfaceClass
 {
 public:
     /**
-     * @brief : Constructor for TestClass
-     */
-    TestClass();
-
-    ~TestClass() = default;
-
-    /**
-     * @brief : A static method in TestClass
-     * @details : This method is used to demonstrate the parsing of static member functions in the PlantUML file.
-     */
-    static void StaticMethod();
-
-    /**
-     * @brief : A test method in TestClass
-     * @details : This method is used to demonstrate the parsing of member functions in the PlantUML file.
+     * @brief : This is a test method.
      */
     void TestMethod();
 
-    /**
-     * @brief : Implementation of the pure virtual method from InterfaceClass
-     */
-    void InterfaceMethod() override;
-
 private:
-    // A private member variable in TestClass
+    // This is a test variable.
     int test_variable;
 
 };
 
-class AbstractClass
-{
-public:
-    virtual ~AbstractClass() = default;
-
-    /**
-     * @brief : A pure virtual method in AbstractClass, making it an abstract class
-     */
-    virtual void AbstractMethod() = 0;
-
-};
-
-class AnotherClass
-    : public AbstractClass
+class ChildClass
+    : public TestClass
 {
 public:
     /**
-     * @brief : Constructor for AnotherClass
+     * @brief : This is a child method.
      */
-    AnotherClass();
-
-    ~AnotherClass() = default;
+    void ChildMethod();
 
     /**
-     * @brief : A test method in AnotherClass
+     * @brief : This is a static child method.
      */
-    void AnotherMethod();
+    static void StaticChildMethod();
 
+protected:
     /**
-     * @brief : Implementation of the pure virtual method from AbstractClass
+     * @brief : This is a protected child method.
      */
-    void AbstractMethod() override;
+    void ProtectedChildMethod();
 
 private:
-    // An instance of TestClass as a member variable in AnotherClass
-    TestClass test_class_instance;
+    // This is a child variable.
+    int child_variable;
 
 };
 
